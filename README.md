@@ -1,11 +1,8 @@
 # Deskly API
 
-Hot-desk booking service for a hybrid office. Six endpoints, one API key header,
-one interesting business rule: **a desk cannot be booked twice for the same date.**
-
-Built as the demo subject for a Git-native Postman session. Deliberately small,
-deliberately conventional — route definitions are plain and explicit so that a
-codebase scan finds all six endpoints without guesswork.
+Hot-desk booking service for a hybrid office. A small Express API with six
+endpoints, API-key authentication, and one core business rule: **a desk cannot
+be booked twice for the same date.**
 
 ## Running it
 
@@ -14,8 +11,8 @@ npm install
 npm start          # or: npm run dev  (restarts on file change)
 ```
 
-Listens on **port 4000** by default. Port 3000 and 8080 are avoided on purpose —
-they collide with too much else.
+Listens on **port 4000** by default. Override the port and API key with
+environment variables:
 
 ```bash
 PORT=5050 API_KEY=my-key npm start
@@ -35,7 +32,9 @@ Every endpoint except `GET /health` requires an API key header:
 X-API-Key: demo-key
 ```
 
-Missing key returns `401 MISSING_API_KEY`. Wrong key returns `403 INVALID_API_KEY`.
+The key defaults to `demo-key` and can be changed with the `API_KEY`
+environment variable. A missing key returns `401 MISSING_API_KEY`; a wrong key
+returns `403 INVALID_API_KEY`.
 
 ## Endpoints
 
@@ -49,7 +48,43 @@ Missing key returns `401 MISSING_API_KEY`. Wrong key returns `403 INVALID_API_KE
 | GET | `/bookings/:bookingId` | 200 | 404 if unknown |
 | DELETE | `/bookings/:bookingId` | 200 | 404 if unknown |
 
+### GET /desks
+
+Returns all desks, optionally filtered by zone. Each desk includes its zone and
+whether it has a monitor or is a standing desk.
+
+```json
+{
+  "count": 1,
+  "zone": "north",
+  "desks": [
+    { "id": "desk-1", "label": "North 01", "zone": "north", "monitor": true, "standing": false }
+  ]
+}
+```
+
+### GET /bookings
+
+Returns all bookings, optionally filtered by `date` and/or `deskId`.
+
+```json
+{
+  "count": 1,
+  "bookings": [
+    {
+      "id": "bkg_seed01",
+      "deskId": "desk-1",
+      "date": "2026-08-06",
+      "bookedBy": "priya@example.com",
+      "createdAt": "2026-08-05T09:00:00.000Z"
+    }
+  ]
+}
+```
+
 ### POST /bookings
+
+Reserves a desk for a date.
 
 ```json
 {
@@ -59,7 +94,8 @@ Missing key returns `401 MISSING_API_KEY`. Wrong key returns `403 INVALID_API_KE
 }
 ```
 
-`deskId` and `date` are required. `bookedBy` is optional and defaults to `"unassigned"`.
+`deskId` and `date` are required. `bookedBy` is optional and defaults to
+`"unassigned"`.
 
 | Status | Error code | Cause |
 |---|---|---|
@@ -81,54 +117,29 @@ The 409 response names the blocking booking:
 }
 ```
 
-## Seed data and state
+### DELETE /bookings/:bookingId
 
-State is in-memory and resets on restart, which is what you want between demo
-runs — no reset endpoint to clean up, just `Ctrl-C` and `npm start`.
+Releases a desk by deleting the booking.
 
-Six desks (`desk-1` … `desk-6`) across three zones. **`desk-1` is pre-booked for
-tomorrow**, so a 409 conflict is reproducible from a cold start with no setup
-calls. Every other desk is free.
-
-Seeded dates are computed relative to today, so this repo doesn't go stale.
-
-## Demo staging
-
-Two branches:
-
-- **`main`** — this code only. No Postman collection, no environment, no tests.
-  That empty starting state is what makes the "watch the collection file appear
-  on disk" moment work.
-- **`demo-complete`** — everything finished and committed. Your rescue branch if
-  a live agent run wanders off.
-
-Don't commit a `.postman/` config by hand — connect the repo in the Postman
-desktop app and use the *Generate config file* prompt so the format matches
-whatever version you're running.
-
-### Suggested demo path
-
-1. Hand-build `GET /desks` — proves the server is up and teaches what a request is.
-2. Agent Mode scans the codebase and generates the other five.
-3. Extract `{{baseURL}}`, create the environment with `apiKey` as a secret.
-4. Agent Mode writes tests, including the 409 conflict case.
-5. Chain `POST /bookings` → `{{bookingId}}` → `GET` → `DELETE`.
-6. Commit, push, raise the PR, review the YAML diff.
-
-### Optional: code + contract in one PR
-
-For a stronger diff, change the past-date message in `src/store.js`:
-
-```js
-if (payload.date < isoDate(0)) {
-  return {
-    status: 400,
-    error: 'VALIDATION_ERROR',
-    message: 'date must not be in the past.',   // <- edit this line
+```json
+{
+  "released": true,
+  "bookingId": "bkg_seed01"
+}
 ```
 
-Now one pull request contains a behaviour change, the updated contract, and the
-test that covers it. That's the most persuasive version of the argument.
+Returns `404 BOOKING_NOT_FOUND` if the booking doesn't exist.
+
+## Data and state
+
+State is held in memory and resets on restart. The service seeds:
+
+- Six desks (`desk-1` … `desk-6`) across three zones: `north`, `south`, and
+  `quiet`.
+- One booking: **`desk-1` is pre-booked for tomorrow**, so a 409 conflict can be
+  reproduced from a cold start with no setup calls.
+
+Seeded dates are computed relative to today, so they never go stale.
 
 ## Project layout
 
