@@ -1,12 +1,17 @@
 'use strict';
 
 const express = require('express');
+const logger = require('./logger');
+const requestLogger = require('./middleware/request-logger');
 const { requireApiKey } = require('./middleware/auth');
 const healthRoutes = require('./routes/health');
 const deskRoutes = require('./routes/desks');
 const bookingRoutes = require('./routes/bookings');
 
 const app = express();
+
+// Log every request (including health checks and rejected auth) up front.
+app.use(requestLogger);
 
 app.use(express.json());
 
@@ -35,7 +40,7 @@ app.use((err, req, res, next) => {
     });
   }
 
-  console.error(err);
+  logger.error(err);
   return res.status(500).json({
     error: 'INTERNAL_ERROR',
     message: 'Something went wrong handling that request.',
