@@ -1,0 +1,7 @@
+workspace:
+  id: bf72a7db-c7e9-42bb-973b-f228bcd24ea9
+cloudResources:
+  globals:
+    ../postman/globals/workspace.globals.yaml: 2e763b0d-2498-45e5-842c-45a34eded921
+  collections:
+    ../postman/collections/Deskly API: 36618015-0e1d5970-dbec-4340-8548-9f5bbd798734
