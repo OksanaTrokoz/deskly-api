@@ -5,3 +5,9 @@ cloudResources:
     ../postman/globals/workspace.globals.yaml: 2e763b0d-2498-45e5-842c-45a34eded921
   collections:
     ../postman/collections/Deskly API: 36618015-0e1d5970-dbec-4340-8548-9f5bbd798734
+localResources:
+  specs:
+    - ../postman/specs/Deskly API/Deskly API.yaml
+resourceNameMappings:
+  specs:
+    - ../postman/specs/Deskly API/Deskly API.yaml: Deskly API

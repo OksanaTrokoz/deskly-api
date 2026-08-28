@@ -1,0 +1,118 @@
+openapi: 3.0.0
+info:
+  title: Deskly API
+  version: 1.0.0
+  description: ''
+servers:
+  - url: 'http://localhost:4000'
+paths:
+  /health:
+    get:
+      summary: 'http://localhost:4000/health'
+      responses: {}
+  /desks:
+    get:
+      summary: List Desks
+      parameters:
+        - name: zone
+          in: query
+          description: 'Optional: filter by zone (e.g. A, B, C)'
+          schema:
+            type: string
+          example: ''
+        - name: X-API-Key
+          in: header
+          schema:
+            type: string
+          example: demo-key
+      responses: {}
+  '/desks/{deskId}':
+    get:
+      summary: Get Desk
+      parameters:
+        - name: X-API-Key
+          in: header
+          schema:
+            type: string
+          example: demo-key
+      responses: {}
+    parameters:
+      - name: deskId
+        in: path
+        required: true
+        description: The ID of the desk to fetch
+        schema:
+          type: string
+        example: desk-1
+  /bookings:
+    get:
+      summary: List Bookings
+      parameters:
+        - name: date
+          in: query
+          description: 'Optional: filter by date (YYYY-MM-DD)'
+          schema:
+            type: string
+          example: ''
+        - name: deskId
+          in: query
+          description: 'Optional: filter by desk ID'
+          schema:
+            type: string
+          example: ''
+        - name: X-API-Key
+          in: header
+          schema:
+            type: string
+          example: demo-key
+      responses: {}
+    post:
+      summary: Create Booking
+      parameters:
+        - name: X-API-Key
+          in: header
+          schema:
+            type: string
+          example: demo-key
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deskId:
+                  type: string
+                date:
+                  type: string
+                  format: date
+            example:
+              deskId: desk-1
+              date: '2026-09-01'
+  '/bookings/{bookingId}':
+    get:
+      summary: Get Booking
+      parameters:
+        - name: X-API-Key
+          in: header
+          schema:
+            type: string
+          example: demo-key
+      responses: {}
+    parameters:
+      - name: bookingId
+        in: path
+        required: true
+        description: The ID of the booking to delete
+        schema:
+          type: string
+        example: booking-1
+    delete:
+      summary: Delete Booking
+      parameters:
+        - name: X-API-Key
+          in: header
+          schema:
+            type: string
+          example: demo-key
+      responses: {}
